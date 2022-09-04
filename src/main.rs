@@ -18,19 +18,31 @@ async fn main() -> std::io::Result<()> {
             match path {
                 path if path != "" => {
                     // Set up a subscriber for logging to files, rolling daily
-                    let subscriber = get_subscriber(APPLICATION_NAME.to_owned(), "info".to_string(), tracing_appender::rolling::daily(path, "log"));
+                    let subscriber = get_subscriber(
+                        APPLICATION_NAME.to_owned(),
+                        "info".to_string(),
+                        tracing_appender::rolling::daily(path, "log")
+                    );
                     init_subscriber(subscriber);
                 },
                 _ => {
                     // Set up a subscriber for logging to the terminal -- good for development
-                    let subscriber = get_subscriber(APPLICATION_NAME.to_owned(), "info".to_string(), std::io::stdout);
+                    let subscriber = get_subscriber(
+                        APPLICATION_NAME.to_owned(),
+                        "info".to_string(),
+                        std::io::stdout
+                    );
                     init_subscriber(subscriber);
                 }
             }
         }
         Err(_) => {
             // Set up a subscriber for logging to the terminal -- good for development
-            let subscriber = get_subscriber(APPLICATION_NAME.to_owned(), "info".to_string(), std::io::stdout);
+            let subscriber = get_subscriber(
+                APPLICATION_NAME.to_owned(),
+                "info".to_string(),
+                std::io::stdout
+            );
             init_subscriber(subscriber);
         }
     }
@@ -44,7 +56,7 @@ async fn main() -> std::io::Result<()> {
         .unwrap();
 
     // ❗ Automatically migrate the database to the latest version when the application starts up.
-    // Comment the below three lines if you prefer manual migration instead.
+    // Comment the below three lines if you prefer manual migration.
     if let Err(_) = Migrator::up(&conn, None).await {
         panic!("Failed to run migration.");
     }
