@@ -30,7 +30,7 @@ async fn main() -> std::io::Result<()> {
         }
         Err(_) => {
             // Set up a subscriber for logging to the terminal -- good for development
-            let subscriber = get_subscriber(app_name, "info".to_string(), std::io::stdout);
+            let subscriber = get_subscriber(APPLICATION_NAME.to_owned(), "info".to_string(), std::io::stdout);
             init_subscriber(subscriber);
         }
     }
