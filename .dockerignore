@@ -1,0 +1,11 @@
+# .env
+.env.example
+**/.git
+**/.gitignore
+**/.idea
+**/.vscode
+**/target
+**/README.md
+recipe.json
+tests
+Dockerfile
