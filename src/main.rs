@@ -11,37 +11,25 @@ const APPLICATION_NAME: &str = "{{project-name}}";
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-    let application_telemetry_path = env::var("APPLICATION_TELEMETRY_PATH");
+    let application_telemetry_path = env::var("APPLICATION_TELEMETRY_PATH").unwrap_or_else(|_| "".to_string());
+    let environment = env::var("ENVIRONMENT").unwrap_or_else(|_| "production".to_string());
 
     match application_telemetry_path {
-        Ok(path) => {
-            match path {
-                path if path != "" => {
-                    // Set up a subscriber for logging to files, rolling daily
-                    let subscriber = get_subscriber(
-                        APPLICATION_NAME.to_owned(),
-                        "info".to_string(),
-                        tracing_appender::rolling::daily(path, "log")
-                    );
-                    init_subscriber(subscriber);
-                },
-                _ => {
-                    // Set up a subscriber for logging to the terminal -- good for development
-                    let subscriber = get_subscriber(
-                        APPLICATION_NAME.to_owned(),
-                        "info".to_string(),
-                        std::io::stdout
-                    );
-                    init_subscriber(subscriber);
-                }
-            }
+        application_telemetry_path if application_telemetry_path != "" => {
+            // Set up a subscriber for logging to files, rolling daily
+            let subscriber = get_subscriber(
+                APPLICATION_NAME.to_owned(),
+                "info".to_string(),
+                tracing_appender::rolling::daily(application_telemetry_path, "log"),
+            );
+            init_subscriber(subscriber);
         }
-        Err(_) => {
+        _ => {
             // Set up a subscriber for logging to the terminal -- good for development
             let subscriber = get_subscriber(
                 APPLICATION_NAME.to_owned(),
                 "info".to_string(),
-                std::io::stdout
+                std::io::stdout,
             );
             init_subscriber(subscriber);
         }
@@ -55,10 +43,11 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
-    // ❗ Automatically migrate the database to the latest version when the application starts up.
-    // Comment the below three lines if you prefer manual migration.
-    if let Err(_) = Migrator::up(&conn, None).await {
-        panic!("Failed to run migration.");
+    // ❗ In development, automatically migrate the database to the latest version when the application starts up.
+    if environment == "development" {
+        if let Err(_) = Migrator::up(&conn, None).await {
+            panic!("Failed to run migration.");
+        }
     }
 
     // Create a TCP listener at the configured address.
