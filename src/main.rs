@@ -12,7 +12,7 @@ const APPLICATION_NAME: &str = "{{project-name}}";
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     let application_telemetry_path = env::var("APPLICATION_TELEMETRY_PATH").unwrap_or_else(|_| "".to_string());
-    let environment = env::var("ENVIRONMENT").unwrap_or_else(|_| "production".to_string());
+    let migration = env::var("MIGRATION").unwrap_or_else(|_| "".to_string());
 
     match application_telemetry_path {
         application_telemetry_path if application_telemetry_path != "" => {
@@ -43,8 +43,8 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
-    // ❗ In development, automatically migrate the database to the latest version when the application starts up.
-    if environment == "development" {
+    // ❗ If enabled, automatically migrate the database to the latest version when the application starts up.
+    if migration == "auto" {
         if let Err(_) = Migrator::up(&conn, None).await {
             panic!("Failed to run migration.");
         }
